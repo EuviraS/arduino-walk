@@ -1,18 +1,10 @@
-#define DEBUG 0
-
 #include "Display.h"
 #include "Mode0.h"
 #include "ModeOne.h"
 #include "ModeBoth.h"
 #include "ModeAlternate.h"
 
-#if DEBUG == 1
-#define SPrint(x) Serial.print(x)
-#define SPrintln(x) Serial.println(x)
-#else
-#define SPrint(x) (x)
-#define SPrintln(x) (x)
-#endif
+#include "common.h"
 
 /*
 const int STATUS_WAITING = 1;
@@ -41,6 +33,7 @@ int interrupt_pin = 1; // Means pin 3
 
 // Default mode
 int mode = 0;
+int last_mode = -1;
 
 // Display var
 Display display(leds);
@@ -64,13 +57,17 @@ void setup()
 #if DEBUG == 1
   Serial.begin(9600);
 #endif
-//  t_last_step = millis();
   
   attachInterrupt(interrupt_pin, change_mode, FALLING);
   
   pinMode(leds[0], OUTPUT);
   pinMode(leds[1], OUTPUT);
-  
+
+  startup_demo();  
+}
+
+void startup_demo()
+{
   // Small trick :)
   int demo_delay = 500;
   delay(demo_delay);
@@ -85,53 +82,25 @@ void setup()
   delay(demo_delay);
   digitalWrite(leds[0], LOW);
   digitalWrite(leds[1], LOW);
-  delay(demo_delay);
-  
-  //init_mode_0();
-  modes[mode]->init();
+  delay(2*demo_delay);
 }
 
 void loop()
 {
-  modes[mode]->loop();
-  /*
-  SPrint("Currently in mode ");
-  SPrintln(mode);
-  
-  if (digitalRead(3) == HIGH)
+  int cur_mode = mode;
+  if (last_mode != cur_mode)
   {
-    change_mode();
+    SPrint("Changing mode : now mode ");
+    SPrintln(mode);
+    last_mode = cur_mode;
+    modes[cur_mode]->init();
   }
-
-  unsigned long t = millis();
-  if (t < t_last_step) { t_last_step = t; }
-  switch(mode)
-  {
-    case 0: loop_mode_0(); break;
-    case 1: loop_mode_1(); break;
-    case 2: loop_mode_2(); break;
-    case 3: loop_mode_3(); break;
-    case 4: loop_mode_4(); break;
-  }
-  delay(100);
-  */
+  modes[cur_mode]->loop();
 }
 
 void change_mode()
 {
-  //Serial.println("Changing Mode");
   mode = (mode + 1) % 5;
-  /*
-  switch (mode)
-  {
-    case 0: init_mode_0(); break;
-    case 1: init_mode_1(); break;
-    case 2: init_mode_2(); break;
-    case 3: init_mode_3(); break;
-    case 4: init_mode_4(); break;
-  }
-  */
-  modes[mode]->init();
 }
 
 

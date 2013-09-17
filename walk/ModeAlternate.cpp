@@ -14,12 +14,12 @@ void ModeAlternate::init() {
 
 void ModeAlternate::loop() {
   unsigned long t = millis();
-  int val = analogRead(_pin);
+  unsigned long val = analogRead(_pin);
 
   if ((t - T_last_step) > BLINKING_MAX_TIME * val / 1023)
   {
     // switch idx
-    _idx = 1-_idx;
+    _idx = 1 - _idx;
     // Save last step
     T_last_step = t;
   }
